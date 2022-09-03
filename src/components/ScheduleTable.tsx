@@ -1,6 +1,7 @@
 import { Appointment } from "../types/ZermeloSchedule";
 
 import {
+  Chip,
   Table,
   TableBody,
   TableCell,
@@ -30,8 +31,8 @@ export default function ScheduleTable(props: { data: Appointment[] }) {
         <TableHead>
           <TableRow>
             <TableCell>Wanneer</TableCell>
-            <TableCell>Docent</TableCell>
             <TableCell>Vak</TableCell>
+            <TableCell>Docent</TableCell>
             <TableCell>Locatie</TableCell>
             <TableCell>Klas</TableCell>
           </TableRow>
@@ -44,8 +45,12 @@ export default function ScheduleTable(props: { data: Appointment[] }) {
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               <TableCell>{formatDate(e.start)}</TableCell>
-              <TableCell>{e.teachers.join(", ")}</TableCell>
               <TableCell>{e.subjects.join(", ")}</TableCell>
+              <TableCell>
+                {e.teachers.map((t) => (
+                  <Chip label={t} />
+                ))}
+              </TableCell>
               <TableCell>{e.locations.join(", ")}</TableCell>
               <TableCell>{e.groups.join(", ")}</TableCell>
             </TableRow>
