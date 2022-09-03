@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 
 export default function Appbar() {
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, marginBottom: "2.5vh" }}>
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -27,7 +27,7 @@ export default function Appbar() {
           </IconButton>
 
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            SLAY
+            Rooster voor Zermelo
           </Typography>
           <Button color="inherit" component={Link} to="/">
             Home
