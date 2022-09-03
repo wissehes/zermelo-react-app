@@ -1,14 +1,21 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Appbar from "../components/Appbar";
 import ScheduleTable from "../components/ScheduleTable";
+import useLiveSchedule from "../hooks/query/useLiveschedule";
 import { SavedToken } from "../types/SavedToken";
-import { getZermeloLiveSchedule } from "../types/ZermeloSchedule";
+import { Appointment } from "../types/ZermeloSchedule";
+
+import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { Box, Container, Tab } from "@mui/material";
 
 export default function Home() {
-  //   const [isLoggedIn, setLoggedIn] = useState<boolean>(false);
   const [tokenData, setTokenData] = useState<SavedToken | null>(null);
+  const [value, setValue] = useState<string>("1");
+
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    setValue(newValue);
+  };
+
   useEffect(() => {
     const rawToken = localStorage.getItem("token");
 
@@ -22,36 +29,45 @@ export default function Home() {
     }
   }, []);
 
-  const queryClient = useQueryClient();
+  const query = useLiveSchedule(tokenData);
 
-  const query = useQuery(["schedule", tokenData], async () => {
-    if (!tokenData) {
-      throw new Error("No token stored");
-    }
-    const { data } = await axios.get<getZermeloLiveSchedule>(
-      `https://${tokenData.portal}.zportal.nl/api/v3/liveschedule`,
-      {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
-        },
-        params: {
-          student: 107012,
-          week: 202236,
-        },
-      }
-    );
-    return data;
+  const todayDate = new Date("09-05-2022");
+  todayDate.setHours(0, 0, 0, 0);
+  const today = query.data?.response.data[0].appointments.filter((a) => {
+    const date = new Date(a.start * 1000);
+    date.setHours(0, 0, 0, 0);
+    return date.toUTCString() === todayDate.toUTCString();
   });
 
   return (
-    <div className="App">
+    <div>
       <Appbar />
+      <Container maxWidth="md">
+        <Box sx={{ width: "100%", typography: "body1" }}>
+          <TabContext value={value}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <TabList
+                onChange={handleChange}
+                aria-label="lab API tabs example"
+              >
+                <Tab label="Vandaag" value="1" />
+                <Tab label="Week" value="2" />
+              </TabList>
+            </Box>
 
-      {tokenData && <p>Token: {tokenData.access_token}</p>}
-
-      {query.data?.response.data[0].appointments && (
-        <ScheduleTable data={query.data?.response.data[0].appointments} />
-      )}
+            <TabPanel value="1">
+              {today && <ScheduleTable data={today} />}
+            </TabPanel>
+            <TabPanel value="2">
+              {query.data?.response.data[0].appointments && (
+                <ScheduleTable
+                  data={query.data?.response.data[0].appointments}
+                />
+              )}
+            </TabPanel>
+          </TabContext>
+        </Box>
+      </Container>
     </div>
   );
 }
